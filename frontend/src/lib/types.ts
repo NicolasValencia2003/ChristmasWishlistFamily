@@ -11,6 +11,7 @@ export interface Gift {
   name: string;
   url: string | null;
   store: string | null;
+  details: string | null;
   createdAt: string;
 }
 

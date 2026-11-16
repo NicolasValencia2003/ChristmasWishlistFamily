@@ -12,10 +12,11 @@ interface Props {
   onCreated: (gift: CreatedGift) => void;
 }
 
-type Field = 'personName' | 'giftName' | 'url' | 'store';
+type Field = 'personName' | 'giftName' | 'url' | 'store' | 'details';
 type Errors = Partial<Record<Field, string>>;
 
 const MAX = 60;
+const DETAILS_MAX = 300;
 const t = es.form;
 
 function validate(values: Record<Field, string>): Errors {
@@ -31,6 +32,7 @@ function validate(values: Record<Field, string>): Errors {
   if (!url && !store) errors.url = t.errors.linkOrStoreRequired;
   else if (url && !isHttpUrl(withProtocol(url))) errors.url = t.errors.urlInvalid;
   if (store.length > MAX) errors.store = t.errors.max;
+  if (values.details.trim().length > DETAILS_MAX) errors.details = t.errors.detailsMax;
   return errors;
 }
 
@@ -40,6 +42,7 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
     giftName: '',
     url: '',
     store: '',
+    details: '',
   });
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState('');
@@ -48,18 +51,19 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
   const giftRef = useRef<HTMLInputElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
   const storeRef = useRef<HTMLInputElement>(null);
+  const detailsRef = useRef<HTMLTextAreaElement>(null);
 
   // Reset the form (with the remembered name) every time it opens.
   useEffect(() => {
     if (!open) return;
     const saved = getSavedName();
-    setValues({ personName: saved, giftName: '', url: '', store: '' });
+    setValues({ personName: saved, giftName: '', url: '', store: '', details: '' });
     setErrors({});
     setServerError('');
     requestAnimationFrame(() => (saved ? giftRef : nameRef).current?.focus());
   }, [open]);
 
-  const set = (field: Field) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const set = (field: Field) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
     // Typing a store also clears the "link or store required" error shown on the link field.
     const clears: Field[] = field === 'store' && errors.url === t.errors.linkOrStoreRequired ? [field, 'url'] : [field];
@@ -77,6 +81,7 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
     if (found.giftName) return giftRef.current?.focus();
     if (found.url) return urlRef.current?.focus();
     if (found.store) return storeRef.current?.focus();
+    if (found.details) return detailsRef.current?.focus();
 
     setSubmitting(true);
     try {
@@ -85,6 +90,7 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
         giftName: values.giftName.trim(),
         url: values.url.trim() ? withProtocol(values.url) : null,
         store: values.store.trim().replace(/\s+/g, ' ') || null,
+        details: values.details.trim() || null,
       });
       saveName(values.personName.trim().replace(/\s+/g, ' '));
       onCreated(gift);
@@ -185,6 +191,24 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
           {errors.store && (
             <p id="gift-store-error" className="field__error">
               {errors.store}
+            </p>
+          )}
+        </div>
+
+        <div className="field">
+          <label htmlFor="gift-details">
+            {t.details} <span className="field__optional">{t.optional}</span>
+          </label>
+          <textarea
+            ref={detailsRef}
+            {...fieldProps('details')}
+            rows={3}
+            maxLength={DETAILS_MAX}
+            placeholder={t.detailsPlaceholder}
+          />
+          {errors.details && (
+            <p id="gift-details-error" className="field__error">
+              {errors.details}
             </p>
           )}
         </div>

@@ -21,6 +21,7 @@ function rowToGift(row: Record<string, unknown>): Gift {
     name: String(row.name),
     url: typeof row.url === 'string' ? row.url : null,
     store: typeof row.store === 'string' ? row.store : null,
+    details: typeof row.details === 'string' ? row.details : null,
     createdAt: String(row.created_at),
   };
 }
@@ -193,6 +194,7 @@ export function PersonPage() {
                   </span>
                   <div className="gift__body">
                     <p className="gift__name">{g.name}</p>
+                    {g.details && <p className="gift__details">{g.details}</p>}
                     {g.url && isHttpUrl(g.url) ? (
                       <a
                         className="gift__link"

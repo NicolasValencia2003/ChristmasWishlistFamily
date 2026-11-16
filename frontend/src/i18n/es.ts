@@ -53,6 +53,8 @@ export const es = {
     urlPlaceholder: 'https://www.tienda.com/producto',
     store: 'Tienda',
     storePlaceholder: 'Ej.: Falabella, Éxito, Amazon',
+    details: 'Especificaciones',
+    detailsPlaceholder: 'Ej.: Talla M, color azul, modelo 2024',
     optional: '(opcional)',
     submit: 'Agregar a mi lista',
     submitting: 'Agregando...',
@@ -63,6 +65,7 @@ export const es = {
       linkOrStoreRequired: 'Agrega el enlace o el nombre de la tienda',
       urlInvalid: 'El enlace debe ser una URL válida (http o https)',
       max: 'Máximo 60 caracteres',
+      detailsMax: 'Máximo 300 caracteres',
     },
   },
   confirmDelete: {

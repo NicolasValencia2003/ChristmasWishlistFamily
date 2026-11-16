@@ -35,7 +35,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   listPeople: () => request<PersonSummary[]>('/people'),
   getPerson: (id: string) => request<PersonWithGifts>(`/people/${encodeURIComponent(id)}`),
-  createGift: (input: { personName: string; giftName: string; url: string | null; store: string | null }) =>
+  createGift: (input: { personName: string; giftName: string; url: string | null; store: string | null; details: string | null }) =>
     request<CreatedGift>('/gifts', { method: 'POST', body: JSON.stringify(input) }),
   deleteGift: (id: string) =>
     request<{ id: string }>(`/gifts/${encodeURIComponent(id)}`, { method: 'DELETE' }),

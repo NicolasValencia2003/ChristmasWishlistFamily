@@ -16,6 +16,7 @@ export interface GiftDto {
   name: string;
   url: string | null;
   store: string | null;
+  details: string | null;
   createdAt: string;
 }
 
@@ -51,7 +52,7 @@ export class PeopleService {
 
     const { data: gifts, error: giftsError } = await this.db.client
       .from('gifts')
-      .select('id, person_id, name, url, store, created_at')
+      .select('id, person_id, name, url, store, details, created_at')
       .eq('person_id', id)
       .order('created_at', { ascending: false });
     if (giftsError) this.db.fail('list gifts', giftsError);
@@ -107,6 +108,7 @@ export function toGiftDto(g: {
   name: string;
   url: string | null;
   store?: string | null;
+  details?: string | null;
   created_at: string;
 }): GiftDto {
   return {
@@ -115,6 +117,7 @@ export function toGiftDto(g: {
     name: g.name,
     url: g.url ?? null,
     store: g.store ?? null,
+    details: g.details ?? null,
     createdAt: g.created_at,
   };
 }

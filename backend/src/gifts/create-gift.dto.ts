@@ -13,6 +13,14 @@ const cleanOptional = (fn: (v: string) => string) => ({ value }: { value: unknow
   return v === '' ? null : v;
 };
 
+/** Trims each line and collapses spaces, keeping line breaks but dropping blank lines. */
+const cleanLines = (v: string) =>
+  v
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/[ \t]+/g, ' '))
+    .filter(Boolean)
+    .join('\n');
+
 export class CreateGiftDto {
   @Transform(clean)
   @IsString({ message: MSG.personNameText })
@@ -42,4 +50,11 @@ export class CreateGiftDto {
   @IsString({ message: MSG.storeText })
   @MaxLength(60, { message: MSG.storeMax })
   store: string | null = null;
+
+  // Free text like size, color or model. Keeps line breaks; trims each line and drops blank ones.
+  @Transform(cleanOptional(cleanLines))
+  @IsOptional()
+  @IsString({ message: MSG.detailsText })
+  @MaxLength(300, { message: MSG.detailsMax })
+  details: string | null = null;
 }

@@ -11,6 +11,8 @@ export const MSG = {
   linkOrStoreRequired: 'Agrega el enlace del regalo o el nombre de la tienda',
   storeText: 'El nombre de la tienda debe ser texto',
   storeMax: 'El nombre de la tienda puede tener máximo 60 caracteres',
+  detailsText: 'Las especificaciones deben ser texto',
+  detailsMax: 'Las especificaciones pueden tener máximo 300 caracteres',
   urlInvalid: 'El enlace debe ser una URL válida (http o https)',
   urlMax: 'El enlace es demasiado largo (máximo 2000 caracteres)',
   invalidId: 'El identificador no es válido',

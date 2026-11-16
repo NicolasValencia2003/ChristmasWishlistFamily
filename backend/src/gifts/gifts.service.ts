@@ -17,8 +17,8 @@ export class GiftsService {
 
     const { data, error } = await this.db.client
       .from('gifts')
-      .insert({ person_id: person.id, name: dto.giftName, url: dto.url, store: dto.store })
-      .select('id, person_id, name, url, store, created_at')
+      .insert({ person_id: person.id, name: dto.giftName, url: dto.url, store: dto.store, details: dto.details })
+      .select('id, person_id, name, url, store, details, created_at')
       .single();
     if (error || !data) this.db.fail('create gift', error);
 
