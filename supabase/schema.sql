@@ -13,10 +13,17 @@ create table if not exists gifts (
   id uuid primary key default gen_random_uuid(),
   person_id uuid not null references people(id) on delete cascade,
   name text not null,
-  url text not null,
+  url text,
+  store text,
   created_at timestamptz default now()
 );
 create index if not exists gifts_person_id_idx on gifts(person_id);
+
+-- A gift needs a link, a store name, or both (upgrades databases created before `store` existed).
+alter table gifts add column if not exists store text;
+alter table gifts alter column url drop not null;
+alter table gifts drop constraint if exists gifts_url_or_store;
+alter table gifts add constraint gifts_url_or_store check (url is not null or store is not null);
 
 alter table people enable row level security;
 alter table gifts enable row level security;

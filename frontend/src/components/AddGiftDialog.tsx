@@ -12,7 +12,7 @@ interface Props {
   onCreated: (gift: CreatedGift) => void;
 }
 
-type Field = 'personName' | 'giftName' | 'url';
+type Field = 'personName' | 'giftName' | 'url' | 'store';
 type Errors = Partial<Record<Field, string>>;
 
 const MAX = 60;
@@ -26,25 +26,34 @@ function validate(values: Record<Field, string>): Errors {
   else if (personName.length > MAX) errors.personName = t.errors.max;
   if (!giftName) errors.giftName = t.errors.giftNameRequired;
   else if (giftName.length > MAX) errors.giftName = t.errors.max;
-  if (!values.url.trim()) errors.url = t.errors.urlRequired;
-  else if (!isHttpUrl(withProtocol(values.url))) errors.url = t.errors.urlInvalid;
+  const url = values.url.trim();
+  const store = values.store.trim();
+  if (!url && !store) errors.url = t.errors.linkOrStoreRequired;
+  else if (url && !isHttpUrl(withProtocol(url))) errors.url = t.errors.urlInvalid;
+  if (store.length > MAX) errors.store = t.errors.max;
   return errors;
 }
 
 export function AddGiftDialog({ open, onClose, onCreated }: Props) {
-  const [values, setValues] = useState<Record<Field, string>>({ personName: '', giftName: '', url: '' });
+  const [values, setValues] = useState<Record<Field, string>>({
+    personName: '',
+    giftName: '',
+    url: '',
+    store: '',
+  });
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const giftRef = useRef<HTMLInputElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
+  const storeRef = useRef<HTMLInputElement>(null);
 
   // Reset the form (with the remembered name) every time it opens.
   useEffect(() => {
     if (!open) return;
     const saved = getSavedName();
-    setValues({ personName: saved, giftName: '', url: '' });
+    setValues({ personName: saved, giftName: '', url: '', store: '' });
     setErrors({});
     setServerError('');
     requestAnimationFrame(() => (saved ? giftRef : nameRef).current?.focus());
@@ -52,7 +61,11 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
 
   const set = (field: Field) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
-    if (errors[field]) setErrors((er) => ({ ...er, [field]: undefined }));
+    // Typing a store also clears the "link or store required" error shown on the link field.
+    const clears: Field[] = field === 'store' && errors.url === t.errors.linkOrStoreRequired ? [field, 'url'] : [field];
+    if (clears.some((f) => errors[f])) {
+      setErrors((er) => ({ ...er, ...Object.fromEntries(clears.map((f) => [f, undefined])) }));
+    }
   };
 
   async function handleSubmit(e: FormEvent) {
@@ -63,13 +76,15 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
     if (found.personName) return nameRef.current?.focus();
     if (found.giftName) return giftRef.current?.focus();
     if (found.url) return urlRef.current?.focus();
+    if (found.store) return storeRef.current?.focus();
 
     setSubmitting(true);
     try {
       const gift = await api.createGift({
         personName: values.personName.trim(),
         giftName: values.giftName.trim(),
-        url: withProtocol(values.url),
+        url: values.url.trim() ? withProtocol(values.url) : null,
+        store: values.store.trim().replace(/\s+/g, ' ') || null,
       });
       saveName(values.personName.trim().replace(/\s+/g, ' '));
       onCreated(gift);
@@ -85,7 +100,10 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
     value: values[field],
     onChange: set(field),
     'aria-invalid': errors[field] ? true : undefined,
-    'aria-describedby': errors[field] ? `gift-${field}-error` : field === 'url' ? 'gift-url-hint' : undefined,
+    'aria-describedby':
+      [errors[field] && `gift-${field}-error`, (field === 'url' || field === 'store') && 'gift-link-hint']
+        .filter(Boolean)
+        .join(' ') || undefined,
     disabled: submitting,
   });
 
@@ -127,8 +145,14 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
           )}
         </div>
 
+        <p id="gift-link-hint" className="field__hint">
+          {t.linkOrStoreHint}
+        </p>
+
         <div className="field">
-          <label htmlFor="gift-url">{t.url}</label>
+          <label htmlFor="gift-url">
+            {t.url} <span className="field__optional">{t.optional}</span>
+          </label>
           <input
             ref={urlRef}
             {...fieldProps('url')}
@@ -139,13 +163,28 @@ export function AddGiftDialog({ open, onClose, onCreated }: Props) {
             spellCheck={false}
             placeholder={t.urlPlaceholder}
           />
-          {errors.url ? (
+          {errors.url && (
             <p id="gift-url-error" className="field__error">
               {errors.url}
             </p>
-          ) : (
-            <p id="gift-url-hint" className="field__hint">
-              {t.urlHint}
+          )}
+        </div>
+
+        <div className="field">
+          <label htmlFor="gift-store">
+            {t.store} <span className="field__optional">{t.optional}</span>
+          </label>
+          <input
+            ref={storeRef}
+            {...fieldProps('store')}
+            type="text"
+            autoComplete="off"
+            maxLength={MAX}
+            placeholder={t.storePlaceholder}
+          />
+          {errors.store && (
+            <p id="gift-store-error" className="field__error">
+              {errors.store}
             </p>
           )}
         </div>

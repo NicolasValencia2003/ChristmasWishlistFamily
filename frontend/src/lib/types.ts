@@ -9,7 +9,8 @@ export interface Gift {
   id: string;
   personId: string;
   name: string;
-  url: string;
+  url: string | null;
+  store: string | null;
   createdAt: string;
 }
 

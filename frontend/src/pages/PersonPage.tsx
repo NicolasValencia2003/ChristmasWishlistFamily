@@ -19,7 +19,8 @@ function rowToGift(row: Record<string, unknown>): Gift {
     id: String(row.id),
     personId: String(row.person_id),
     name: String(row.name),
-    url: String(row.url),
+    url: typeof row.url === 'string' ? row.url : null,
+    store: typeof row.store === 'string' ? row.store : null,
     createdAt: String(row.created_at),
   };
 }
@@ -192,16 +193,18 @@ export function PersonPage() {
                   </span>
                   <div className="gift__body">
                     <p className="gift__name">{g.name}</p>
-                    {isHttpUrl(g.url) && (
+                    {g.url && isHttpUrl(g.url) ? (
                       <a
                         className="gift__link"
                         href={g.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={es.person.viewInStoreLabel(g.name)}
+                        aria-label={es.person.viewInStoreLabel(g.name, g.store)}
                       >
-                        {es.person.viewInStore} <span aria-hidden="true">↗</span>
+                        {es.person.viewInStore(g.store)} <span aria-hidden="true">↗</span>
                       </a>
+                    ) : (
+                      g.store && <p className="gift__store">{es.person.findAt(g.store)}</p>
                     )}
                     <p className="gift__date">{es.person.addedOn(dateFormat.format(new Date(g.createdAt)))}</p>
                   </div>

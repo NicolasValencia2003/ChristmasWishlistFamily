@@ -32,11 +32,8 @@ npx --yes supabase start -x "$EXCLUDE" >/dev/null
 eval "$(npx --yes supabase status -o env 2>/dev/null | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
 
 DB_CONTAINER="supabase_db_$(sed -n 's/^project_id = "\(.*\)"/\1/p' supabase/config.toml)"
-HAS_TABLES="$(docker exec "$DB_CONTAINER" psql -U postgres -d postgres -tAc "select to_regclass('public.people') is not null")"
-if [[ "$HAS_TABLES" != "t" ]]; then
-  echo "▶ Creating tables from supabase/schema.sql..."
-  docker exec -i "$DB_CONTAINER" psql -q -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/schema.sql
-fi
+echo "▶ Applying supabase/schema.sql (safe to re-run)..."
+docker exec -i "$DB_CONTAINER" psql -q -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/schema.sql
 
 # LAN IP so phones on the same Wi-Fi can open it.
 LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || true)"

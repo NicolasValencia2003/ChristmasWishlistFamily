@@ -553,6 +553,11 @@ a {
 .gift__link:hover {
   color: var(--green-dark);
 }
+.gift__store {
+  font-weight: 700;
+  color: var(--green);
+  overflow-wrap: anywhere;
+}
 .gift__date {
   font-size: 0.85rem;
   color: var(--muted);
@@ -724,6 +729,11 @@ a {
   font-weight: 700;
 }
 .field__hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.field__optional {
+  font-weight: 600;
   color: var(--muted);
   font-size: 0.9rem;
 }

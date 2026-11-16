@@ -21,7 +21,7 @@ A small, real-time Christmas wishlist for the family. Everyone can see everyone'
 ## How it works
 
 - `GET /people` lists everyone with their gift count. `GET /people/:id` returns a person and their gifts (newest first).
-- `POST /gifts` with `{ personName, giftName, url }` finds the person by a **normalized name** (lowercase, trimmed, repeated spaces collapsed, accents removed, so `María`, `maria` and ` MARIA ` match) or creates them, then inserts the gift. If two people create the same new name at once, the unique index rejects one insert and the backend re-reads the winner.
+- `POST /gifts` with `{ personName, giftName, url?, store? }` (a link, a store name, or both; at least one is required) finds the person by a **normalized name** (lowercase, trimmed, repeated spaces collapsed, accents removed, so `María`, `maria` and ` MARIA ` match) or creates them, then inserts the gift. If two people create the same new name at once, the unique index rejects one insert and the backend re-reads the winner.
 - `DELETE /gifts/:id` deletes a gift.
 - Validation and error messages come back in Spanish (`{ statusCode, message }`), and the frontend shows them as they are.
 - **Real-time:** the browser subscribes to Supabase Realtime `postgres_changes` on `people` and `gifts` using the public `anon` key. Inserts and deletes update every open browser without a refresh. The client also refetches when it (re)connects, when the device comes back online and when the tab becomes visible again. No WebSockets run through Vercel; the realtime socket goes straight to Supabase.
